@@ -30,6 +30,7 @@ from torchvision import transforms
 from utils.constants import DATA_MEANS, DATA_STD
 from utils.datasets import initialize_datasets
 
+from src.vit import ViT
 ### Arguments
 FLAGS = flags.FLAGS
 
