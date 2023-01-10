@@ -3,8 +3,12 @@ import jax
 import jax.numpy as jnp
 from jax import random
 
+### Plots
+import matplotlib.pyplot as plt
 
 import numpy as np
+import os
+
 
 ### Parser
 from absl import app, flags
@@ -46,7 +50,7 @@ def initialize_jax(random_seed: int = 42) -> int:
     
     return main_rng
 
-def numpy_to_torch(array: jnp.array) -> torch.Tensor:
+def numpy_to_torch(array: tp.Union[tp.Any, np.ndarray]) -> torch.Tensor:
     array = jax.device_get(array)
     tensor = torch.from_numpy(array)
     tensor = tensor.permute(0, 3, 1, 2)
@@ -55,12 +59,23 @@ def numpy_to_torch(array: jnp.array) -> torch.Tensor:
 def main_train_vit(_: tp.Any) -> ...:
     main_rng = initialize_jax(FLAGS.seed)
     print("Creating dataloaders")
-    train_loader, val_loader, test_loader = initialize_datasets(image_to_numpy=image_to_numpy)
-    # print(next(iter(train_loader)))
+    train_loader, val_loader, test_loader, val_set = initialize_datasets(image_to_numpy=image_to_numpy)
 
     print(f"Saving samples from dataset to {FLAGS.assets_path}")
     
+    NUM_IMAGES = 4
+    CIFAR_images = np.stack([val_set[idx][0] for idx in range(NUM_IMAGES)], axis=0)
+    img_grid = torchvision.utils.make_grid(numpy_to_torch(CIFAR_images),
+                                       nrow=4, normalize=True, pad_value=0.9)
+    img_grid = img_grid.permute(1, 2, 0)
     
+    plt.figure(figsize=(8,8))
+    plt.title("Image examples of the CIFAR10 dataset")
+    plt.imshow(img_grid)
+    plt.axis('off')
+    
+    plt.savefig(os.path.join(FLAGS.assets_path, 'example.jpg'))
 
+    
 if __name__ == "__main__":
     app.run(main_train_vit)

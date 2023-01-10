@@ -21,7 +21,7 @@ def numpy_collate(batch):
         return np.array(batch)
     
     
-def initialize_datasets(image_to_numpy: tp.Callable[[np.array], np.array]) -> tp.Tuple[data.DataLoader, data.DataLoader, data.DataLoader]:
+def initialize_datasets(image_to_numpy: tp.Callable[[np.array], np.array]) -> tp.Tuple[data.DataLoader, data.DataLoader, data.DataLoader, data.Dataset]:
     
     test_transform = image_to_numpy
     train_transform = transforms.Compose([transforms.RandomHorizontalFlip(),
@@ -37,7 +37,7 @@ def initialize_datasets(image_to_numpy: tp.Callable[[np.array], np.array]) -> tp
     test_set = CIFAR10(root=FLAGS.dataset_path, train=False, transform=test_transform, download=True)
     
     train_loader = data.DataLoader(train_set,
-                                        batch_size=128,
+                                        batch_size=32,
                                         shuffle=True,
                                         drop_last=True,
                                         collate_fn=numpy_collate,
@@ -45,7 +45,7 @@ def initialize_datasets(image_to_numpy: tp.Callable[[np.array], np.array]) -> tp
                                         persistent_workers=True)
     
     val_loader  = data.DataLoader(val_set,
-                                        batch_size=128,
+                                        batch_size=32,
                                         shuffle=False,
                                         drop_last=False,
                                         collate_fn=numpy_collate,
@@ -53,11 +53,11 @@ def initialize_datasets(image_to_numpy: tp.Callable[[np.array], np.array]) -> tp
                                         persistent_workers=True)
     
     test_loader  = data.DataLoader(test_set,
-                                        batch_size=128,
+                                        batch_size=32,
                                         shuffle=False,
                                         drop_last=False,
                                         collate_fn=numpy_collate,
                                         num_workers=4,
                                         persistent_workers=True)
     
-    return train_loader, val_loader, test_loader
+    return train_loader, val_loader, test_loader, val_set
