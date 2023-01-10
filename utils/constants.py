@@ -1,0 +1,4 @@
+import numpy as np
+
+DATA_MEANS = np.array([0.49139968, 0.48215841, 0.44653091])
+DATA_STD = np.array([0.24703223, 0.24348513, 0.26158784])
