@@ -30,7 +30,7 @@ from torchvision import transforms
 from utils.constants import DATA_MEANS, DATA_STD
 from utils.datasets import initialize_datasets
 
-from src.vit import ViT
+from src.vit import img_to_patch
 ### Arguments
 FLAGS = flags.FLAGS
 
@@ -39,7 +39,7 @@ flags.DEFINE_integer("seed", default=42, help="Random seed.")
 flags.DEFINE_string("dataset_path", default="/home/m_bobrin/tmp", help="Path to the dataset.")
 
 
-def image_to_numpy(img):
+def image_to_numpy(img) -> np.ndarray:
     img = np.array(img, dtype=np.float32)
     img = (img / 255. - DATA_MEANS) / DATA_STD
     return img
@@ -56,16 +56,32 @@ def numpy_to_torch(array: tp.Union[tp.Any, np.ndarray]) -> torch.Tensor:
     tensor = torch.from_numpy(array)
     tensor = tensor.permute(0, 3, 1, 2)
     return tensor
+
+def save_patches(CIFAR_images: np.ndarray) -> ...:
+    img_patches = img_to_patch(CIFAR_images, patch_size=4)
+
+    fig, ax = plt.subplots(CIFAR_images.shape[0], 1, figsize=(14,3))
     
+    fig.suptitle("Images as input sequences of patches")
+    
+    for i in range(CIFAR_images.shape[0]):
+        img_grid = torchvision.utils.make_grid(numpy_to_torch(img_patches[i]),
+                                            nrow=64, normalize=True, pad_value=0.9)
+        img_grid = img_grid.permute(1, 2, 0)
+        ax[i].imshow(img_grid)
+        ax[i].axis('off')
+    plt.savefig(os.path.join(FLAGS.assets_path, 'patches.jpg'))
+    
+
 def main_train_vit(_: tp.Any) -> ...:
+    
     main_rng = initialize_jax(FLAGS.seed)
     print("Creating dataloaders")
     train_loader, val_loader, test_loader, val_set = initialize_datasets(image_to_numpy=image_to_numpy)
 
     print(f"Saving samples from dataset to {FLAGS.assets_path}")
-    
-    NUM_IMAGES = 4
-    CIFAR_images = np.stack([val_set[idx][0] for idx in range(NUM_IMAGES)], axis=0)
+
+    CIFAR_images = np.stack([val_set[idx][0] for idx in range(4)], axis=0)
     img_grid = torchvision.utils.make_grid(numpy_to_torch(CIFAR_images),
                                        nrow=4, normalize=True, pad_value=0.9)
     img_grid = img_grid.permute(1, 2, 0)
@@ -77,6 +93,10 @@ def main_train_vit(_: tp.Any) -> ...:
     
     plt.savefig(os.path.join(FLAGS.assets_path, 'example.jpg'))
 
+    print("Initializing ViT")
+    save_patches(CIFAR_images)
     
+    #vit = ViT()
+        
 if __name__ == "__main__":
     app.run(main_train_vit)
