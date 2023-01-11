@@ -30,13 +30,14 @@ from torchvision import transforms
 from utils.constants import DATA_MEANS, DATA_STD
 from utils.datasets import initialize_datasets
 
-from src.vit import img_to_patch
+from src.vit import img_to_patch, VisionTransformer
 ### Arguments
 FLAGS = flags.FLAGS
 
 flags.DEFINE_string("assets_path", default= "assets/", help="Path for logs save dir.")
 flags.DEFINE_integer("seed", default=42, help="Random seed.")
 flags.DEFINE_string("dataset_path", default="/home/m_bobrin/tmp", help="Path to the dataset.")
+flags.DEFINE_string("logger", default='wandb', help='Logger to use. Currently only Weights n Biases')
 
 
 def image_to_numpy(img) -> np.ndarray:
